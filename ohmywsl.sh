@@ -266,6 +266,12 @@ install_nodejs() {
     local nvm_dir="${NVM_DIR:-$HOME/.nvm}"
     if [[ -s "$nvm_dir/nvm.sh" ]]; then
         log_skip "nvm（Node.js 版本管理器）"
+        # 确保 nvm 在当前 shell 中可用
+        set +u
+        export NVM_DIR="$nvm_dir"
+        # shellcheck source=/dev/null
+        source "$NVM_DIR/nvm.sh"
+        set -u
         return 0
     fi
 
@@ -274,14 +280,19 @@ install_nodejs() {
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 
     # 立即加载 nvm，使后续步骤可用
+    # nvm.sh 内部使用了未设置的变量，必须临时关闭 -u 严格模式
+    set +u
     export NVM_DIR="$HOME/.nvm"
     # shellcheck source=/dev/null
     [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
+    set -u
     log_info "nvm 安装完成"
 
     log_info "安装 Node.js LTS..."
+    set +u
     nvm install --lts
     nvm use --lts
+    set -u
     log_info "Node.js 安装完成：$(node --version)，npm：$(npm --version)"
 }
 
@@ -292,21 +303,9 @@ install_claude_code() {
     fi
 
     log_info "安装 Claude Code..."
-    # 确保 nvm 和 node 已加载
-    local nvm_dir="${NVM_DIR:-$HOME/.nvm}"
-    if [[ -s "$nvm_dir/nvm.sh" ]]; then
-        # shellcheck source=/dev/null
-        source "$nvm_dir/nvm.sh"
-    fi
-
-    if ! is_installed npm; then
-        log_error "npm 未找到，请先确认 Node.js 已正确安装"
-        return 1
-    fi
-
-    # 官方推荐：通过 npm 全局安装
-    # 参考：https://docs.anthropic.com/en/docs/claude-code
-    npm install -g @anthropic-ai/claude-code
+    # 官方原生安装脚本（推荐方式，自动更新，无需 Node 依赖）
+    # 参考：https://code.claude.com/docs/en/getting-started
+    curl -fsSL https://claude.ai/install.sh | bash
     log_info "Claude Code 安装完成：$(claude --version 2>/dev/null || echo '请重启 Shell 后验证')"
 }
 

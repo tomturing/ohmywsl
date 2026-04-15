@@ -1,13 +1,6 @@
 <div align="center">
 
-```
-  ██████╗ ██╗  ██╗    ███╗   ███╗██╗   ██╗    ██╗    ██╗███████╗██╗
-  ██╔═══██╗██║  ██║    ████╗ ████║╚██╗ ██╔╝    ██║    ██║██╔════╝██║
-  ██║   ██║███████║    ██╔████╔██║ ╚████╔╝     ██║ █╗ ██║███████╗██║
-  ██║   ██║██╔══██║    ██║╚██╔╝██║  ╚██╔╝      ██║███╗██║╚════██║██║
-  ╚██████╔╝██║  ██║    ██║ ╚═╝ ██║   ██║       ╚███╔███╔╝███████║███████╗
-   ╚═════╝ ╚═╝  ╚═╝    ╚═╝     ╚═╝   ╚═╝        ╚══╝╚══╝ ╚══════╝╚══════╝
-```
+# ⚡ OH·MY·WSL
 
 **专为 WSL2 打造的极速 Vibe Coding 终端环境**
 
@@ -34,15 +27,15 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  Layer 4 · 生产力核心    LazyVim  ·  Claude Code  ·  Copilot   │
+│  Layer 4 · 生产力核心    LazyVim  ·  Claude Code  ·  Copilot     │
 ├─────────────────────────────────────────────────────────────────┤
-│  Layer 3 · 高效命令      Zoxide   ·  Atuin        ·  LSD       │
+│  Layer 3 · 高效命令      Zoxide   ·  Atuin        ·  LSD         │
 ├─────────────────────────────────────────────────────────────────┤
-│  Layer 2 · 交互逻辑      Fish Shell               ·  Starship  │
+│  Layer 2 · 交互逻辑      Fish Shell               ·  Starship    │
 ├─────────────────────────────────────────────────────────────────┤
-│  Layer 1 · 空间管理      Zellij                   ·  Yazi      │
+│  Layer 1 · 空间管理      Zellij                   ·  Yazi        │
 ├─────────────────────────────────────────────────────────────────┤
-│  Host    · 底层宿主       Windows Terminal         ·  WSL2      │
+│  Host    · 底层宿主      Windows Terminal         ·  WSL2        │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -214,12 +207,12 @@ sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
 # LazyVim starter 配置
 git clone --depth 1 https://github.com/LazyVim/starter ~/.config/nvim
 
-# Node.js via nvm（Claude Code 依赖）
+# Node.js via nvm（可选，仅当其他工具需要 Node 时）
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 nvm install --lts
 
-# Claude Code（官方唯一推荐方式：npm）
-npm install -g @anthropic-ai/claude-code
+# Claude Code（官方原生安装脚本，自动更新，无需 Node 依赖）
+curl -fsSL https://claude.ai/install.sh | bash
 ```
 
 </details>
