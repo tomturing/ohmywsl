@@ -384,14 +384,12 @@ if status is-interactive
 
     # ── nvm（Node.js 版本管理）──
     set -gx NVM_DIR "$HOME/.nvm"
-    if test -s "$NVM_DIR/nvm.sh"
-        # bass 用于在 fish 中加载 bash 脚本（需安装 bass）
-        # 若未安装 bass，可改用 fish-nvm 插件
-        function nvm
-            bass source "$NVM_DIR/nvm.sh" --no-use ';' nvm $argv
+    if test -d "$NVM_DIR/versions/node"
+        # Fish 原生方式：直接将已安装的 node 版本加入 PATH，无需 bass
+        set -l _node_bins (ls -d "$NVM_DIR/versions/node/"*/bin 2>/dev/null | sort -V)
+        if test (count _node_bins) -gt 0
+            set -gx PATH "$_node_bins[-1]" $PATH
         end
-        # 自动使用默认 node 版本
-        bass source "$NVM_DIR/nvm.sh"
     end
 
 end
