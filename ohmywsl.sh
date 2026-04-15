@@ -4,7 +4,7 @@
 # 按照 README.md 四层架构安装：
 #   第一层：空间管理 - Zellij + Yazi
 #   第二层：交互逻辑 - Fish + Starship
-#   第三层：高效命令 - Zoxide + Atuin + LSD
+#   第三层：高效命令 - Zoxide + Atuin + LSD + bat + fd + rg + fzf + tlrc + fastfetch + lazygit
 #   第四层：生产力核心 - Neovim(LazyVim) + Claude Code
 #
 # 幂等设计：支持多次重复运行，已安装组件自动跳过，配置不重复注入
@@ -217,6 +217,163 @@ install_lsd() {
     log_info "LSD 安装完成：$(lsd --version)"
 }
 
+# ==================== 第三层补充：命令增强工具 ====================
+# 按功能分组：
+#   文本查看  - bat（cat 升级：语法高亮 + Git 行差标注）
+#   文件系统  - fd（find 升级：快速直觉化查找）
+#   代码搜索  - ripgrep（grep 升级：多核并行）、fzf（通用模糊选择器）
+#   开发辅助  - lazygit（Git TUI）、fastfetch（系统信息）、tlrc（tldr 速查）
+
+install_bat() {
+    # Ubuntu/Debian apt 包名为 bat，但二进制安装为 batcat（避免与其他工具冲突）
+    if is_installed bat; then
+        log_skip "bat"
+        return 0
+    fi
+    if is_installed batcat; then
+        # 已通过 apt 安装，只需创建 bat 软链接
+        sudo ln -sf "$(command -v batcat)" /usr/local/bin/bat
+        log_info "已创建 bat -> batcat 软链接"
+        return 0
+    fi
+
+    log_info "安装 bat（语法高亮文件查看器）..."
+    # 参考：https://github.com/sharkdp/bat#installation
+    sudo apt-get install -y bat
+    # Ubuntu/Debian 上二进制名为 batcat，创建 bat 软链接
+    if is_installed batcat && ! is_installed bat; then
+        sudo ln -sf "$(command -v batcat)" /usr/local/bin/bat
+    fi
+    log_info "bat 安装完成"
+}
+
+install_fd() {
+    # Ubuntu/Debian apt 包名为 fd-find，二进制为 fdfind（避免与 fd 软件冲突）
+    if is_installed fd; then
+        log_skip "fd"
+        return 0
+    fi
+    if is_installed fdfind; then
+        # 已通过 apt 安装，只需创建 fd 软链接
+        sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
+        log_info "已创建 fd -> fdfind 软链接"
+        return 0
+    fi
+
+    log_info "安装 fd（快速文件查找工具）..."
+    # 参考：https://github.com/sharkdp/fd#installation
+    sudo apt-get install -y fd-find
+    if is_installed fdfind && ! is_installed fd; then
+        sudo ln -sf "$(command -v fdfind)" /usr/local/bin/fd
+    fi
+    log_info "fd 安装完成"
+}
+
+install_ripgrep() {
+    if is_installed rg; then
+        log_skip "ripgrep"
+        return 0
+    fi
+
+    log_info "安装 ripgrep（高速代码搜索工具）..."
+    # 参考：https://github.com/BurntSushi/ripgrep#installation
+    sudo apt-get install -y ripgrep
+    log_info "ripgrep 安装完成：$(rg --version | head -1)"
+}
+
+install_fzf() {
+    if is_installed fzf; then
+        log_skip "fzf"
+        return 0
+    fi
+
+    log_info "安装 fzf（命令行模糊搜索工具）..."
+    # 参考：https://github.com/junegunn/fzf#installation
+    sudo apt-get install -y fzf
+    log_info "fzf 安装完成：$(fzf --version)"
+}
+
+install_tlrc() {
+    if is_installed tldr; then
+        log_skip "tlrc (tldr)"
+        return 0
+    fi
+
+    log_info "安装 tlrc（Rust 版 tldr 速查手册）..."
+    # 官方 Rust 原生客户端，命令为 tldr
+    # 参考：https://github.com/tldr-pages/tlrc
+    local arch
+    arch="$(get_arch)"
+    local tmp_dir
+    tmp_dir="$(mktemp -d)"
+
+    curl -sSL \
+        "https://github.com/tldr-pages/tlrc/releases/latest/download/tlrc-${arch}-unknown-linux-musl.tar.gz" \
+        | tar -xz -C "$tmp_dir"
+
+    sudo install -m 755 "$tmp_dir/tldr" /usr/local/bin/tldr
+    rm -rf "$tmp_dir"
+    log_info "tlrc 安装完成：$(tldr --version 2>/dev/null || echo 'OK')"
+}
+
+install_fastfetch() {
+    if is_installed fastfetch; then
+        log_skip "fastfetch"
+        return 0
+    fi
+
+    log_info "安装 fastfetch（系统信息展示工具）..."
+    # 参考：https://github.com/fastfetch-cli/fastfetch
+    if apt-cache show fastfetch &>/dev/null 2>&1; then
+        # Ubuntu 22.04+/Debian 12+ 可直接 apt 安装
+        sudo apt-get install -y fastfetch
+    else
+        # 旧版系统从 GitHub Releases 下载
+        local arch
+        arch="$(get_arch)"
+        # fastfetch 发布包使用 amd64/arm64 命名
+        local pkg_arch
+        pkg_arch="$([ "$arch" = "x86_64" ] && echo "amd64" || echo "arm64")"
+        local tmp_dir
+        tmp_dir="$(mktemp -d)"
+
+        curl -sSL \
+            "https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-${pkg_arch}.tar.gz" \
+            | tar -xz -C "$tmp_dir"
+
+        sudo install -m 755 "$tmp_dir/usr/bin/fastfetch" /usr/local/bin/fastfetch
+        rm -rf "$tmp_dir"
+    fi
+    log_info "fastfetch 安装完成：$(fastfetch --version | head -1)"
+}
+
+install_lazygit() {
+    if is_installed lazygit; then
+        log_skip "lazygit"
+        return 0
+    fi
+
+    log_info "安装 lazygit（Git 终端可视化工具）..."
+    # 官方推荐：从 GitHub Releases 下载（apt 版本滞后较多）
+    # 参考：https://github.com/jesseduffield/lazygit#installation
+    local arch
+    arch="$(get_arch)"
+    local tmp_dir
+    tmp_dir="$(mktemp -d)"
+
+    local latest_ver
+    latest_ver="$(curl -sSf https://api.github.com/repos/jesseduffield/lazygit/releases/latest \
+        | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/')"
+
+    curl -sSL \
+        "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${latest_ver}_Linux_${arch}.tar.gz" \
+        | tar -xz -C "$tmp_dir"
+
+    sudo install -m 755 "$tmp_dir/lazygit" /usr/local/bin/lazygit
+    rm -rf "$tmp_dir"
+    log_info "lazygit 安装完成：$(lazygit --version)"
+}
+
 # ==================== 第四层：生产力核心 (Neovim + LazyVim + Node.js + Claude Code) ====================
 
 install_neovim() {
@@ -363,14 +520,24 @@ if status is-interactive
         atuin init fish | source
     end
 
-    # ── 别名 ──
-    # ls 替换为 lsd（图标 + 颜色）
+    # ── 别名 · 文件列表 ──
+    # lsd：彩色图标版 ls
     if type -q lsd
         alias ls='lsd'
         alias l='lsd -l'
         alias la='lsd -a'
         alias ll='lsd -la'
         alias lt='lsd --tree'
+    end
+
+    # ── 别名 · 开发辅助 ──
+    # lazygit：终端 Git 可视化（lg 快捷调用）
+    if type -q lazygit
+        alias lg='lazygit'
+    end
+    # fastfetch：系统信息展示（ff 快捷调用）
+    if type -q fastfetch
+        alias ff='fastfetch'
     end
 
     # ── 第一层：空间管理 ──
@@ -570,10 +737,21 @@ main() {
     install_starship
 
     # ── 第三层：高效命令 ──
-    log_step "【第三层】高效命令 - Zoxide + Atuin + LSD"
+    log_step "【第三层】高效命令 - 导航 + 文件查看 + 搜索 + 开发辅助"
+    # 导航与历史
     install_zoxide
     install_atuin
+    # 文件列表与文本查看
     install_lsd
+    install_bat
+    install_fd
+    # 代码搜索
+    install_ripgrep
+    install_fzf
+    # 开发辅助
+    install_tlrc
+    install_fastfetch
+    install_lazygit
 
     # ── 第四层：生产力核心 ──
     log_step "【第四层】生产力核心 - Neovim(LazyVim) + Node.js + Claude Code"

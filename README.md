@@ -51,7 +51,10 @@
 | **Host** | Windows Terminal + WSL2 | 容器与渲染 | GPU 加速渲染，极致丝滑的文字滚动 |
 | **Layer 1** | [Zellij](https://zellij.dev/) + [Yazi](https://yazi-rs.github.io/) | 空间管理 | 像 IDE 一样的分屏，再也不用鼠标点来点去 |
 | **Layer 2** | [Fish](https://fishshell.com/) + [Starship](https://starship.rs/) | 交互逻辑 | 预测性补全 + 极速状态感知 |
-| **Layer 3** | [Zoxide](https://github.com/ajeetdsouza/zoxide) + [Atuin](https://atuin.sh/) + [LSD](https://github.com/lsd-rs/lsd) | 高效命令 | 肌肉记忆的终结者，不再翻找历史，不再输入长路径 |
+| **Layer 3** | 🦭 **导航** [Zoxide](https://github.com/ajeetdsouza/zoxide) · [Atuin](https://atuin.sh/) | 高效命令 | 智能目录跳转 + 全局历史命令搜索 |
+| | 🗂️ **文件** [LSD](https://github.com/lsd-rs/lsd) · [bat](https://github.com/sharkdp/bat) · [fd](https://github.com/sharkdp/fd) | | 彩色文件列表 + 语法高亮查看 + 快速查找 |
+| | 🔍 **搜索** [ripgrep](https://github.com/BurntSushi/ripgrep) · [fzf](https://github.com/junegunn/fzf) | | 多核并行代码搜索 + 模糊匹配选择器 |
+| | 🛠️ **辅助** [lazygit](https://github.com/jesseduffield/lazygit) · [fastfetch](https://github.com/fastfetch-cli/fastfetch) · [tlrc](https://github.com/tldr-pages/tlrc) | | Git TUI + 系统信息 + tldr 速查手册 |
 | **Layer 4** | [LazyVim](https://www.lazyvim.org/) + [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | 生产力核心 | Copilot 写代码，Claude Code 跑 Agent |
 
 ---
@@ -121,6 +124,29 @@ zj
 | `cc` | 启动 Claude Code（Agent 模式）|
 | `cc --help` | 查看 Claude Code 帮助 |
 
+### 🔍 文本搜索与查看
+
+> `bat` 是 `cat` 的语法高亮升级版；`rg` 比 `grep` 快 10x 并自动忽略 `.gitignore`；`fd` 是直觉化的 `find`；`fzf` 是通用模糊选择器
+
+| 命令 | 说明 |
+| :--- | :--- |
+| `bat <文件>` | 语法高亮查看文件，支持 Git 行变更标注 |
+| `rg <关键词>` | 全项目代码搜索（自动忽略 `.gitignore`）|
+| `rg -t py <关键词>` | 只搜索指定类型文件（`py`/`js`/`go` 等）|
+| `fd <文件名>` | 快速文件查找，支持正则，语法比 find 直觉 |
+| `fzf` | 交互式模糊选择器（任意命令 `\|` 管道接入）|
+| `Ctrl` + `T` | Fish 中模糊搜索文件并插入当前行 |
+
+### 🛠️ 开发辅助
+
+> `lg` 用键盘完成所有 Git 操作；`tldr <命令>` 是 3 秒速查的精简版 man
+
+| 命令 | 说明 |
+| :--- | :--- |
+| `lg` | 启动 lazygit（可视化暂存 / 提交 / 分支 / 合并）|
+| `tldr <命令>` | 查看命令速查示例（如 `tldr git`、`tldr curl`）|
+| `ff` | 显示系统信息（fastfetch）|
+
 ---
 
 ## 🎨 视觉调优 · Visuals
@@ -187,17 +213,51 @@ curl -sS https://starship.rs/install.sh | sh
 </details>
 
 <details>
-<summary>Layer 3 · 高效命令（Zoxide + Atuin + LSD）</summary>
+<summary>Layer 3 · 高效命令（Zoxide · Atuin · LSD · bat · fd · ripgrep · fzf · lazygit · tlrc · fastfetch）</summary>
 
 ```bash
-# Zoxide — 智能 cd
+# ── 导航与历史 ──
+
+# Zoxide — 智能目录跳转（z 命令，替代 cd）
 curl -sSf https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
 
-# Atuin — 增强历史记录
+# Atuin — 增强历史记录（Ctrl+R 全屏搜索）
 curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
 
-# LSD — 现代 ls（Ubuntu 23.04+）
+# ── 文件列表与文本查看 ──
+
+# LSD — 彩色 ls（图标 + 颜色）
 sudo apt install lsd
+
+# bat — 语法高亮 cat（Ubuntu 安装为 batcat，需创建软链接）
+sudo apt install bat
+sudo ln -sf /usr/bin/batcat /usr/local/bin/bat   # Ubuntu 适用
+
+# fd — 快速 find（Ubuntu 安装为 fdfind，需创建软链接）
+sudo apt install fd-find
+sudo ln -sf /usr/bin/fdfind /usr/local/bin/fd    # Ubuntu 适用
+
+# ── 搜索 ──
+
+# ripgrep — 多核并行 grep（命令为 rg）
+sudo apt install ripgrep
+
+# fzf — 模糊匹配选择器
+sudo apt install fzf
+
+# ── 开发辅助 ──
+
+# lazygit — Git 终端可视化（从 GitHub 下载最新版以避免 apt 版本过旧）
+LAZYGIT_VER=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/')
+curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VER}_Linux_x86_64.tar.gz"
+tar -xzf /tmp/lazygit.tar.gz -C /tmp lazygit && sudo install /tmp/lazygit /usr/local/bin
+
+# tlrc — Rust 版 tldr 速查手册（命令为 tldr）
+curl -sSL https://github.com/tldr-pages/tlrc/releases/latest/download/tlrc-x86_64-unknown-linux-musl.tar.gz | tar -xz
+sudo install -m 755 tldr /usr/local/bin/tldr
+
+# fastfetch — 系统信息展示（Ubuntu 22.04+）
+sudo apt install fastfetch
 ```
 
 </details>
