@@ -303,9 +303,23 @@ install_claude_code() {
     fi
 
     log_info "安装 Claude Code..."
-    # 官方原生安装脚本（推荐方式，自动更新，无需 Node 依赖）
-    # 参考：https://code.claude.com/docs/en/getting-started
-    curl -fsSL https://claude.ai/install.sh | bash
+    # 确保 nvm 和 node 已加载
+    local nvm_dir="${NVM_DIR:-$HOME/.nvm}"
+    if [[ -s "$nvm_dir/nvm.sh" ]]; then
+        set +u
+        # shellcheck source=/dev/null
+        source "$nvm_dir/nvm.sh"
+        set -u
+    fi
+
+    if ! is_installed npm; then
+        log_error "npm 未找到，请先确认 Node.js 已正确安装"
+        return 1
+    fi
+
+    # 通过 npm 全局安装
+    # 参考：https://docs.anthropic.com/en/docs/claude-code
+    npm install -g @anthropic-ai/claude-code
     log_info "Claude Code 安装完成：$(claude --version 2>/dev/null || echo '请重启 Shell 后验证')"
 }
 

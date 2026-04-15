@@ -218,8 +218,8 @@ git clone --depth 1 https://github.com/LazyVim/starter ~/.config/nvim
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
 nvm install --lts
 
-# Claude Code（官方原生安装脚本，自动更新，无需 Node 依赖）
-curl -fsSL https://claude.ai/install.sh | bash
+# Claude Code
+  npm install -g @anthropic-ai/claude-code
 ```
 
 </details>
