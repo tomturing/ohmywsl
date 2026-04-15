@@ -19,4 +19,4 @@
 ### 🚀 Quick Start
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/tomturing/ohmywsl/main/setup.sh](https://raw.githubusercontent.com/tomturing/ohmywsl/main/setup.sh) | bash
+curl -sSL https://raw.githubusercontent.com/tomturing/ohmywsl/main/setup.sh | bash
