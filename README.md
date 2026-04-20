@@ -86,6 +86,50 @@ zj
 
 ---
 
+## 📋 安装方式与目录说明
+
+脚本采用 **3 种安装方式**，文件分布到 **4 个目录**：
+
+### 安装方式
+
+| 方式 | 工具 | 特点 |
+| :--- | :--- | :--- |
+| **apt-get** | fish, bat, fd, ripgrep, fzf, lsd, fastfetch | 系统包管理，版本可能滞后 |
+| **官方安装脚本** | starship, zoxide, atuin, nvm | 自动检测系统，安装到用户目录 |
+| **GitHub Releases 二进制** | zellij, yazi, lsd, tlrc, fastfetch, lazygit, neovim | 最新版本，手动下载解压 |
+
+### 安装目录
+
+| 目录 | 权限 | 工具 |
+| :--- | :--- | :--- |
+| `/usr/local/bin` | root (sudo) | zellij, yazi, ya, lsd, bat(软链), fd(软链), tldr, fastfetch, flashfetch, lazygit, nvim(软链) |
+| `/opt/nvim-linux-{arch}` | root (sudo) | neovim 主程序目录 |
+| `~/.local/bin` | 用户 | zoxide |
+| `~/.atuin/bin` | 用户 | atuin |
+| `~/.nvm` | 用户 | nvm + node + npm |
+
+### 映射关系
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        安装方式 → 安装目录 映射                          │
+├─────────────┬────────────────┬───────────────────────────────────────────┤
+│ apt-get     │ /usr/bin       │ fish, ripgrep (rg), fzf                  │
+│             │ /usr/local/bin │ bat→batcat软链, fd→fdfind软链            │
+├─────────────┼────────────────┼───────────────────────────────────────────┤
+│ 官方脚本    │ ~/.local/bin   │ zoxide                                   │
+│             │ ~/.atuin/bin   │ atuin                                    │
+│             │ ~/.nvm         │ nvm, node, npm                           │
+│             │ /usr/local/bin │ starship                                 │
+├─────────────┼────────────────┼───────────────────────────────────────────┤
+│ Releases    │ /usr/local/bin │ zellij, yazi, ya, lsd, tldr,             │
+│             │                │ fastfetch, flashfetch, lazygit           │
+│             │ /opt + 软链    │ neovim                                   │
+└─────────────┴────────────────┴───────────────────────────────────────────┘
+```
+
+---
+
 ## ⌨️ 快捷键速查 · Cheatsheet
 
 ### 🪟 空间管理 · Zellij
@@ -249,11 +293,12 @@ sudo apt install fzf
 
 # lazygit — Git 终端可视化（从 GitHub 下载最新版以避免 apt 版本过旧）
 LAZYGIT_VER=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/')
-curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VER}_Linux_x86_64.tar.gz"
+curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VER}_linux_x86_64.tar.gz"
 tar -xzf /tmp/lazygit.tar.gz -C /tmp lazygit && sudo install /tmp/lazygit /usr/local/bin
 
-# tlrc — Rust 版 tldr 速查手册（命令为 tldr）
-curl -sSL https://github.com/tldr-pages/tlrc/releases/latest/download/tlrc-x86_64-unknown-linux-musl.tar.gz | tar -xz
+# tlrc — Rust 版 tldr 速查手册（命令为 tldr，文件名含版本号需动态获取）
+TLRC_VER=$(curl -s https://api.github.com/repos/tldr-pages/tlrc/releases/latest | grep '"tag_name"' | sed 's/.*"\([^"]*\)".*/\1/')
+curl -sSL "https://github.com/tldr-pages/tlrc/releases/download/${TLRC_VER}/tlrc-${TLRC_VER}-x86_64-unknown-linux-musl.tar.gz" | tar -xz
 sudo install -m 755 tldr /usr/local/bin/tldr
 
 # fastfetch — 系统信息展示（Ubuntu 22.04+）
