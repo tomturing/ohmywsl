@@ -544,23 +544,37 @@ install_claude_code() {
 
 configure_fish() {
     log_step "配置阶段：Fish Shell"
+
+    # 分离配置文件方案：
+    # - config.fish 只注入一行 source 命令（用标记检测防止重复）
+    # - ohmywsl.fish 每次覆盖更新（包含所有配置内容）
+
     local fish_conf="$HOME/.config/fish/config.fish"
-    # 使用唯一标记，防止重复注入
-    local marker="# <<< OH-MY-WSL BEGIN >>>"
+    local ohmywsl_fish="$HOME/.config/fish/ohmywsl.fish"
+    local marker="# <<< OH-MY-WSL SOURCE >>>"
 
     mkdir -p "$(dirname "$fish_conf")"
+    mkdir -p "$(dirname "$ohmywsl_fish")"
     touch "$fish_conf"
 
-    if grep -qF "$marker" "$fish_conf"; then
-        log_skip "Fish 配置块"
-        return 0
+    # 在 config.fish 中注入 source 命令（仅第一次）
+    if ! grep -qF "$marker" "$fish_conf"; then
+        log_info "注入 Fish 配置引用..."
+        echo "" >> "$fish_conf"
+        echo "$marker" >> "$fish_conf"
+        echo "source $ohmywsl_fish" >> "$fish_conf"
+        echo "# <<< OH-MY-WSL SOURCE END >>>" >> "$fish_conf"
+    else
+        log_info "Fish 配置引用已存在，跳过注入"
     fi
 
-    log_info "注入 Fish 配置..."
-    cat >> "$fish_conf" << 'FISH_BLOCK'
+    # 每次覆盖更新 ohmywsl.fish（配置内容更新）
+    log_info "更新 Fish 配置文件..."
+    cat > "$ohmywsl_fish" << 'FISH_BLOCK'
+# OH-MY-WSL Fish Shell 配置
+# 由 ohmywsl.sh 自动生成，每次执行都会更新此文件
+# 如需自定义配置，请在 ~/.config/fish/config.fish 中添加（不要修改此文件）
 
-# <<< OH-MY-WSL BEGIN >>>
-# 由 ohmywsl.sh 自动生成，请勿手动修改此块
 if status is-interactive
 
     # ── PATH 配置（用户本地安装路径）──
@@ -634,10 +648,9 @@ if status is-interactive
     end
 
 end
-# <<< OH-MY-WSL END >>>
 FISH_BLOCK
 
-    log_info "Fish 配置注入完成"
+    log_info "Fish 配置更新完成"
 }
 
 # ==================== Starship 配置 ====================
@@ -645,12 +658,8 @@ FISH_BLOCK
 configure_starship() {
     local starship_conf="$HOME/.config/starship.toml"
 
-    if path_exists "$starship_conf"; then
-        log_skip "Starship 配置文件"
-        return 0
-    fi
-
-    log_info "创建 Starship 配置..."
+    # 每次覆盖更新（配置内容更新）
+    log_info "更新 Starship 配置..."
     mkdir -p "$(dirname "$starship_conf")"
 
     cat > "$starship_conf" << 'STARSHIP_BLOCK'
@@ -730,12 +739,8 @@ STARSHIP_BLOCK
 configure_zellij() {
     local zellij_conf="$HOME/.config/zellij/config.kdl"
 
-    if path_exists "$zellij_conf"; then
-        log_skip "Zellij 配置文件"
-        return 0
-    fi
-
-    log_info "创建 Zellij 配置..."
+    # 每次覆盖更新（配置内容更新）
+    log_info "更新 Zellij 配置..."
     mkdir -p "$(dirname "$zellij_conf")"
 
     cat > "$zellij_conf" << 'ZELLIJ_BLOCK'
