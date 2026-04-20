@@ -51,7 +51,7 @@
 | **Host** | Windows Terminal + WSL2 | 容器与渲染 | GPU 加速渲染，极致丝滑的文字滚动 |
 | **Layer 1** | [Zellij](https://zellij.dev/) + [Yazi](https://yazi-rs.github.io/) | 空间管理 | 像 IDE 一样的分屏，再也不用鼠标点来点去 |
 | **Layer 2** | [Fish](https://fishshell.com/) + [Starship](https://starship.rs/) | 交互逻辑 | 预测性补全 + 极速状态感知 |
-| **Layer 3** | 🦭 **导航** [Zoxide](https://github.com/ajeetdsouza/zoxide) · [Atuin](https://atuin.sh/) | 高效命令 | 智能目录跳转 + 全局历史命令搜索 |
+| **Layer 3** | 🦭 **导航** [Zoxide](https://github.com/ajeetdsouza/zoxide) · [Atuin](https://atuin.sh/) · [Bun](https://bun.sh/) | 高效命令 | 智能目录跳转 + 全局历史命令搜索 + JS 运行时(atuin hook依赖) |
 | | 🗂️ **文件** [LSD](https://github.com/lsd-rs/lsd) · [bat](https://github.com/sharkdp/bat) · [fd](https://github.com/sharkdp/fd) | | 彩色文件列表 + 语法高亮查看 + 快速查找 |
 | | 🔍 **搜索** [ripgrep](https://github.com/BurntSushi/ripgrep) · [fzf](https://github.com/junegunn/fzf) | | 多核并行代码搜索 + 模糊匹配选择器 |
 | | 🛠️ **辅助** [lazygit](https://github.com/jesseduffield/lazygit) · [fastfetch](https://github.com/fastfetch-cli/fastfetch) · [tlrc](https://github.com/tldr-pages/tlrc) | | Git TUI + 系统信息 + tldr 速查手册 |
@@ -106,6 +106,7 @@ zj
 | `/opt/nvim-linux-{arch}` | root (sudo) | neovim 主程序目录 |
 | `~/.local/bin` | 用户 | zoxide |
 | `~/.atuin/bin` | 用户 | atuin |
+| `~/.bun/bin` | 用户 | bun |
 | `~/.nvm` | 用户 | nvm + node + npm |
 
 ### 映射关系
@@ -119,6 +120,7 @@ zj
 ├─────────────┼────────────────┼───────────────────────────────────────────┤
 │ 官方脚本    │ ~/.local/bin   │ zoxide                                   │
 │             │ ~/.atuin/bin   │ atuin                                    │
+│             │ ~/.bun/bin     │ bun                                      │
 │             │ ~/.nvm         │ nvm, node, npm                           │
 │             │ /usr/local/bin │ starship                                 │
 ├─────────────┼────────────────┼───────────────────────────────────────────┤
@@ -267,6 +269,9 @@ curl -sSf https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh |
 
 # Atuin — 增强历史记录（Ctrl+R 全屏搜索）
 curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+
+# Bun — 高性能 JavaScript 运行时（atuin hook 依赖）
+curl -fsSL https://bun.sh/install | bash
 
 # ── 文件列表与文本查看 ──
 
