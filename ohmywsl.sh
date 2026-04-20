@@ -376,7 +376,11 @@ install_fastfetch() {
             "https://github.com/fastfetch-cli/fastfetch/releases/latest/download/fastfetch-linux-${pkg_arch}.tar.gz" \
             | tar -xz -C "$tmp_dir"
 
-        sudo install -m 755 "$tmp_dir/usr/bin/fastfetch" /usr/local/bin/fastfetch
+        # 解压后有嵌套目录 fastfetch-linux-${pkg_arch}/
+        local extracted_dir
+        extracted_dir="$(find "$tmp_dir" -maxdepth 1 -type d -name "fastfetch-*" | head -1)"
+        sudo install -m 755 "$extracted_dir/usr/bin/fastfetch" /usr/local/bin/fastfetch
+        sudo install -m 755 "$extracted_dir/usr/bin/flashfetch" /usr/local/bin/flashfetch 2>/dev/null || true
         rm -rf "$tmp_dir"
     fi
     log_info "fastfetch 安装完成：$(fastfetch --version | head -1)"
