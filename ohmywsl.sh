@@ -395,17 +395,19 @@ install_lazygit() {
     log_info "安装 lazygit（Git 终端可视化工具）..."
     # 官方推荐：从 GitHub Releases 下载（apt 版本滞后较多）
     # 参考：https://github.com/jesseduffield/lazygit#installation
+    # 注：文件名格式为 lazygit_{version}_linux_{arch}.tar.gz（小写 linux）
     local arch
     arch="$(get_arch)"
     local tmp_dir
     tmp_dir="$(mktemp -d)"
 
+    # 获取最新版本号（去掉 v 前缀，如 v0.61.1 → 0.61.1）
     local latest_ver
     latest_ver="$(curl -sSf https://api.github.com/repos/jesseduffield/lazygit/releases/latest \
         | grep '"tag_name"' | sed 's/.*"v\([^"]*\)".*/\1/')"
 
     curl -sSL \
-        "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${latest_ver}_Linux_${arch}.tar.gz" \
+        "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${latest_ver}_linux_${arch}.tar.gz" \
         | tar -xz -C "$tmp_dir"
 
     sudo install -m 755 "$tmp_dir/lazygit" /usr/local/bin/lazygit
