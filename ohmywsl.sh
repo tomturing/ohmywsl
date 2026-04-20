@@ -44,9 +44,25 @@ log_skip() {
     echo -e "${YELLOW}[SKIP]${NC} $1 已安装，跳过"
 }
 
-# 检测命令是否存在
+# 检测命令是否存在（支持额外路径）
 is_installed() {
-    command -v "$1" &>/dev/null
+    local cmd="$1"
+    # 先检查默认 PATH
+    if command -v "$cmd" &>/dev/null; then
+        return 0
+    fi
+    # 再检查常见用户本地安装路径
+    local extra_paths=(
+        "$HOME/.local/bin"
+        "$HOME/.atuin/bin"
+        "$HOME/.cargo/bin"
+    )
+    for p in "${extra_paths[@]}"; do
+        if [[ -x "$p/$cmd" ]]; then
+            return 0
+        fi
+    done
+    return 1
 }
 
 # 检测文件/目录是否存在
@@ -168,6 +184,12 @@ install_zoxide() {
     # 官方推荐安装脚本：https://github.com/ajeetdsouza/zoxide#installation
     # 注：Debian/Ubuntu 包版本较旧，官方推荐用安装脚本
     curl -sSf https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | bash
+
+    # 立即将安装路径加入当前 shell PATH，使后续命令可用
+    if [[ -d "$HOME/.local/bin" ]]; then
+        export PATH="$HOME/.local/bin:$PATH"
+    fi
+
     log_info "Zoxide 安装完成：$(zoxide --version)"
 }
 
@@ -179,7 +201,14 @@ install_atuin() {
 
     log_info "安装 Atuin（增强版 Shell 历史记录）..."
     # 官方推荐安装脚本：https://github.com/atuinsh/atuin#installation
-    curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh
+    # 使用 --yes 跳过交互式确认（自动导入历史记录）
+    curl --proto '=https' --tlsv1.2 -LsSf https://setup.atuin.sh | sh -s -- --yes
+
+    # 立即将安装路径加入当前 shell PATH，使后续命令可用
+    if [[ -d "$HOME/.atuin/bin" ]]; then
+        export PATH="$HOME/.atuin/bin:$PATH"
+    fi
+
     log_info "Atuin 安装完成：$(atuin --version)"
 }
 
@@ -302,13 +331,19 @@ install_tlrc() {
     log_info "安装 tlrc（Rust 版 tldr 速查手册）..."
     # 官方 Rust 原生客户端，命令为 tldr
     # 参考：https://github.com/tldr-pages/tlrc
+    # 注：tlrc 发布文件名包含版本号，需动态获取
     local arch
     arch="$(get_arch)"
     local tmp_dir
     tmp_dir="$(mktemp -d)"
 
+    # 获取最新版本号（格式：v1.13.0）
+    local latest_ver
+    latest_ver="$(curl -sSf https://api.github.com/repos/tldr-pages/tlrc/releases/latest \
+        | grep '"tag_name"' | sed 's/.*"\([^"]*\)".*/\1/')"
+
     curl -sSL \
-        "https://github.com/tldr-pages/tlrc/releases/latest/download/tlrc-${arch}-unknown-linux-musl.tar.gz" \
+        "https://github.com/tldr-pages/tlrc/releases/download/${latest_ver}/tlrc-${latest_ver}-${arch}-unknown-linux-musl.tar.gz" \
         | tar -xz -C "$tmp_dir"
 
     sudo install -m 755 "$tmp_dir/tldr" /usr/local/bin/tldr
@@ -502,6 +537,16 @@ configure_fish() {
 # <<< OH-MY-WSL BEGIN >>>
 # 由 ohmywsl.sh 自动生成，请勿手动修改此块
 if status is-interactive
+
+    # ── PATH 配置（用户本地安装路径）──
+    # zoxide 等工具安装到 ~/.local/bin
+    if test -d "$HOME/.local/bin"
+        set -gx PATH "$HOME/.local/bin" $PATH
+    end
+    # atuin 安装到 ~/.atuin/bin
+    if test -d "$HOME/.atuin/bin"
+        set -gx PATH "$HOME/.atuin/bin" $PATH
+    end
 
     # ── 第二层：交互逻辑 ──
     # Starship 提示符
