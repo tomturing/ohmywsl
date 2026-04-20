@@ -4,7 +4,7 @@
 # 按照 README.md 四层架构安装：
 #   第一层：空间管理 - Zellij + Yazi
 #   第二层：交互逻辑 - Fish + Starship
-#   第三层：高效命令 - Zoxide + Atuin + LSD + bat + fd + rg + fzf + tlrc + fastfetch + lazygit
+#   第三层：高效命令 - Zoxide + Atuin + Bun + LSD + bat + fd + rg + fzf + tlrc + fastfetch + lazygit
 #   第四层：生产力核心 - Neovim(LazyVim) + Claude Code
 #
 # 幂等设计：支持多次重复运行，已安装组件自动跳过，配置不重复注入
@@ -55,6 +55,7 @@ is_installed() {
     local extra_paths=(
         "$HOME/.local/bin"
         "$HOME/.atuin/bin"
+        "$HOME/.bun/bin"
         "$HOME/.cargo/bin"
     )
     for p in "${extra_paths[@]}"; do
@@ -210,6 +211,24 @@ install_atuin() {
     fi
 
     log_info "Atuin 安装完成：$(atuin --version)"
+}
+
+install_bun() {
+    if is_installed bun; then
+        log_skip "Bun"
+        return 0
+    fi
+
+    log_info "安装 Bun（高性能 JavaScript 运行时）..."
+    # 官方推荐安装脚本：https://bun.sh/docs/installation
+    curl -fsSL https://bun.sh/install | bash
+
+    # 立即将安装路径加入当前 shell PATH，使后续命令可用
+    if [[ -d "$HOME/.bun/bin" ]]; then
+        export PATH="$HOME/.bun/bin:$PATH"
+    fi
+
+    log_info "Bun 安装完成：$(bun --version)"
 }
 
 install_lsd() {
@@ -553,6 +572,10 @@ if status is-interactive
     if test -d "$HOME/.atuin/bin"
         set -gx PATH "$HOME/.atuin/bin" $PATH
     end
+    # bun 安装到 ~/.bun/bin
+    if test -d "$HOME/.bun/bin"
+        set -gx PATH "$HOME/.bun/bin" $PATH
+    end
 
     # ── 第二层：交互逻辑 ──
     # Starship 提示符
@@ -792,6 +815,7 @@ main() {
     # 导航与历史
     install_zoxide
     install_atuin
+    install_bun
     # 文件列表与文本查看
     install_lsd
     install_bat
